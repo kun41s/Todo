@@ -56,7 +56,8 @@ body {
   }
   
   button {
-    padding: 0;
+    padding: 5px;
+    margin: 5px;
     border: none;
     font-family: "Architects Daughter", cursive;
     text-decoration: none;
@@ -70,6 +71,16 @@ body {
     padding: 0.5rem 1rem;
     border-radius: 5px;
     border: 2px solid hsl(198, 1%, 29%);
+  }
+
+  button:hover {
+    background-color: coral;
+  }
+
+  .todoList input {
+    text-align: left;
+    position: absolute;
+    padding: 0.5rem;
   }
   
   li {

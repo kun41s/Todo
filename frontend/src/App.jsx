@@ -5,20 +5,26 @@ import { useState } from "react";
 
 function App() {
   const [input, setInput] = useState("");
-  const [todo, setTodo] = useState([]);
+  const [todoList, setTodoList] = useState([]);
+  const [walletBtn, setWalletBtn] = useState(false);
+  const [checkedBox, setCheckedBox] = useState(false);
 
   async function connectWallet() {
-    await TodoContract();
+    const contract = await TodoContract();
+    setWalletBtn(true);
+    return contract;
   }
 
   async function getTodoList() {
-    if (!connectWallet) {
-      alert("Please Connect your wallet");
-    } else if (connectWallet) {
-      const contract = await TodoContract();
-      const getTodoList = await contract.getTask();
-      // console.log(getTodoList);
-      setTodo(getTodoList);
+    try {
+      if (walletBtn === true) {
+        const contract = await TodoContract();
+        const getTodoList = await contract.getTask();
+        // console.log(getTodoList);
+        setTodoList(getTodoList);
+      }
+    } catch (error) {
+      console.log(error);
     }
   }
 
@@ -28,10 +34,34 @@ function App() {
   }
 
   async function submitTodo(event) {
-    event.preventDefault();
-    console.log(input);
-    const contract = await TodoContract();
-    await contract.createTask(input);
+    try {
+      event.preventDefault();
+      const contract = await TodoContract();
+      await contract.createTask(input);
+      setInput("");
+    } catch (error) {
+      console.log(error);
+    }
+  }
+
+  async function handleCheckedBox(event) {
+    try {
+      if (checkedBox === false) {
+        const id = event.currentTarget.id;
+        setCheckedBox(true);
+        console.log(id, checkedBox);
+        const contract = await TodoContract();
+        await contract.updateTaskStatus(id);
+      } else if (checkedBox === true) {
+        const id = event.currentTarget.id;
+        setCheckedBox(false);
+        console.log(id, checkedBox);
+        const contract = await TodoContract();
+        await contract.updateTaskStatus(id);
+      }
+    } catch (error) {
+      console.log(error);
+    }
   }
 
   getTodoList();
@@ -42,11 +72,11 @@ function App() {
         <h1>To-Do List</h1>
       </div>
 
-      <div>
+      <div className="form">
         <form onSubmit={submitTodo}>
           <label>
             <input
-            type="text"
+              type="text"
               onChange={handleInputChange}
               value={input}
               placeholder="Add Todo"
@@ -54,21 +84,31 @@ function App() {
           </label>
         </form>
         <div>
-          <button type="button" onClick={submitTodo}>Add</button>
+          <button type="button" onClick={submitTodo}>
+            Add
+          </button>
         </div>
       </div>
 
-      {todo.map((todo, i) => {
+      {todoList.map((todo, i) => {
         return (
-          <div key={i}>
-            <ul>
-              <li>{todo}</li>
-            </ul>
+          <div className={todoList} key={i}>
+            <input
+              value={todo}
+              id={i}
+              type="checkbox"
+              onChange={handleCheckedBox}
+            />
+            <span>{todo}</span>
           </div>
         );
       })}
 
-      <button onClick={connectWallet}>Connect Wallet</button>
+      {walletBtn === false ? (
+        <button onClick={connectWallet}>Connect Wallet</button>
+      ) : (
+        ""
+      )}
     </div>
   );
 }
